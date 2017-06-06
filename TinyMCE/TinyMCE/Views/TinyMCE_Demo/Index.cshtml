@@ -1,0 +1,179 @@
+﻿@model TinyMCE.Models.TinyDemoModel
+@{
+    ViewBag.Title = "Index";
+}
+
+<h2>Index</h2>
+
+@using (Html.BeginForm("Index", "TinyMCE_Demo",FormMethod.Post))
+{
+    @Html.AntiForgeryToken()
+    <div>
+        @Html.TextAreaFor(m=>m.Template)
+    </div><br />
+    <div>
+        <input type="submit"id="btn" value="Save"/>
+    </div>
+    
+    @*<table style="border-collapse: collapse; width: 240pt;" border="0" width="320" cellspacing="0" cellpadding="0"><colgroup><col style="width: 48pt;" span="5" width="64" /> </colgroup>
+<tbody>
+<tr style="height: 15.0pt;">
+<td class="xl65" style="height: 15.0pt; width: 48pt;" width="64" height="20">a</td>
+<td class="xl65" style="border-left-width: initial; border-left-style: none; width: 48pt;" width="64">b</td>
+<td class="xl66" style="border-left-width: initial; border-left-style: none; width: 48pt;" width="64">fds</td>
+<td class="xl66" style="border-left-width: initial; border-left-style: none; width: 48pt;" width="64">n</td>
+<td class="xl66" style="border-left-width: initial; border-left-style: none; width: 48pt;" width="64">nk</td>
+</tr>
+<tr style="height: 15.0pt;">
+<td class="xl66" style="height: 15pt; border-top-width: initial; border-top-style: none;" height="20">a</td>
+<td class="xl66" style="border-top-width: initial; border-top-style: none; border-left-width: initial; border-left-style: none;">b</td>
+<td class="xl66" style="border-top-width: initial; border-top-style: none; border-left-width: initial; border-left-style: none;">joi</td>
+<td class="xl66" style="border-top-width: initial; border-top-style: none; border-left-width: initial; border-left-style: none;">jjk</td>
+<td class="xl66" style="border-top-width: initial; border-top-style: none; border-left-width: initial; border-left-style: none;">jk</td>
+</tr>
+<tr style="height: 15.0pt;">
+<td class="xl66" style="height: 15pt; border-top-width: initial; border-top-style: none;" height="20">a</td>
+<td class="xl66" style="border-top-width: initial; border-top-style: none; border-left-width: initial; border-left-style: none;">b</td>
+<td class="xl66" style="border-top-width: initial; border-top-style: none; border-left-width: initial; border-left-style: none;">sd</td>
+<td class="xl66" style="border-top-width: initial; border-top-style: none; border-left-width: initial; border-left-style: none;">kk</td>
+<td class="xl66" style="border-top-width: initial; border-top-style: none; border-left-width: initial; border-left-style: none;">fgdf</td>
+</tr>
+<tr style="height: 15.0pt;">
+<td class="xl66" style="height: 15pt; border-top-width: initial; border-top-style: none;" height="20">a</td>
+<td class="xl66" style="border-top-width: initial; border-top-style: none; border-left-width: initial; border-left-style: none;">b</td>
+<td class="xl66" style="border-top-width: initial; border-top-style: none; border-left-width: initial; border-left-style: none;">sfd</td>
+<td class="xl66" style="border-top-width: initial; border-top-style: none; border-left-width: initial; border-left-style: none;">ff</td>
+<td class="xl66" style="border-top-width: initial; border-top-style: none; border-left-width: initial; border-left-style: none;">fgdf</td>
+</tr>
+</tbody>
+</table>*@
+    
+}
+
+@section Scripts
+{
+    @Scripts.Render("~/bundles/jqueryval")
+<script src="~/Scripts/tinymce/tinymce.js"></script>
+<script type="text/javascript">
+
+    //tinymce.init({
+    //    selector: "textarea",
+    //    plugins: "table",
+    //    plugins: "paste",
+    //    menubar: "edit",
+    //    toolbar: "paste",
+    //    table_cell_class_list: [
+    //{title: 'None', value: ''},
+    //{title: 'Dog', value: 'dog'},
+    //{title: 'Cat', value: 'cat'}
+    //    ],
+    //    content_css: [
+    //     '//fonts.googleapis.com/css?family=Lato:300,300i,400,400i',
+    //     '//www.tinymce.com/css/codepen.min.css',
+    //    ],
+
+    //})
+
+
+    //tinymce.init({
+    //    selector: 'textarea',
+    //    height: 400,
+    //    menubar: true,
+    //    plugins: [
+    //      'advlist autolink lists link image charmap print preview anchor',
+    //      'searchreplace visualblocks advcode fullscreen',
+    //      'insertdatetime media table contextmenu powerpaste'
+    //    ],
+    //    toolbar: 'undo redo | insert | styleselect | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link image code',
+    //    powerpaste_allow_local_images: true,
+    //    powerpaste_word_import: 'prompt',
+    //    powerpaste_html_import: 'prompt',
+    //    content_css: [
+    //      '//fonts.googleapis.com/css?family=Lato:300,300i,400,400i',
+    //      '//www.tinymce.com/css/codepen.min.css']
+    //});                 
+
+
+    //tinymce.PluginManager.add('example', function (editor, url) {
+    //    // Add a button that opens a window
+    //    editor.addButton('example', {
+    //        text: 'My button',
+    //        icon: false,
+    //        onclick: function () {
+    //            // Open window
+    //            editor.windowManager.open({
+    //                title: 'Example plugin',
+    //                body: [
+    //                  { type: 'textbox', name: 'title', label: 'Title' }
+    //                ],
+    //                onsubmit: function (e) {
+    //                    // Insert content when the window form is submitted
+    //                    editor.insertContent('Title: ' + e.data.title);
+    //                }
+    //            });
+    //        }
+    //    });
+
+    //    // Adds a menu item to the tools menu
+    //    editor.addMenuItem('example', {
+    //        text: 'Example plugin',
+    //        context: 'tools',
+    //        onclick: function () {
+    //            // Open window with a specific url
+    //            editor.windowManager.open({
+    //                title: 'TinyMCE site',
+    //                url: 'http://www.tinymce.com',
+    //                width: 800,
+    //                height: 600,
+    //                buttons: [{
+    //                    text: 'Close',
+    //                    onclick: 'close'
+    //                }]
+    //            });
+    //        }
+    //    });
+    //});
+
+    //tinymce.init({
+    //    selector: 'textarea',
+    //    height: 300,
+    //    theme: 'modern',
+    //    plugins: [
+    //      'advlist autolink lists link image charmap print preview hr anchor pagebreak',
+    //      'searchreplace wordcount visualblocks visualchars code fullscreen',
+    //      'insertdatetime media nonbreaking save table contextmenu directionality',
+    //      'emoticons template paste textcolor colorpicker textpattern imagetools codesample toc help'
+    //    ],
+    //    toolbar1: 'undo redo | insert | styleselect | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link image',
+    //    toolbar2: 'print preview media | forecolor backcolor emoticons | codesample help',
+    //    image_advtab: true,
+    //    templates: [
+    //      { title: 'test template 1', content: 'test 1' },
+    //      { title: 'test template 2', content: 'test 2' }
+    //    ],
+    //    content_css: [
+    //      '//fonts.googleapis.com/css?family=lato:300,300i,400,400i',
+    //      '//www.tinymce.com/css/codepen.min.css'
+    //    ]
+    //});
+
+    tinymce.init({
+        selector: 'textarea',
+        height: 400,
+        menubar: true,
+        plugins: [
+          'advlist autolink lists link image charmap print preview anchor',
+          'searchreplace visualblocks advcode fullscreen',
+          'insertdatetime media table contextmenu powerpaste'
+        ],
+        toolbar: 'undo redo | insert | styleselect | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link image code',
+        powerpaste_allow_local_images: true,
+        powerpaste_word_import: 'prompt',
+        powerpaste_html_import: 'prompt',
+        content_css: [
+          '//fonts.googleapis.com/css?family=Lato:300,300i,400,400i',
+          '//www.tinymce.com/css/codepen.min.css']
+    });
+   
+</script>
+}
