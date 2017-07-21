@@ -1,0 +1,312 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<edmx:Edmx Version="2.0" xmlns:edmx="http://schemas.microsoft.com/ado/2008/10/edmx">
+  <!-- EF Runtime content -->
+  <edmx:Runtime>
+    <!-- SSDL content -->
+    <edmx:StorageModels>
+    <Schema Namespace="SMsgSModel.Store" Alias="Self" Provider="System.Data.SqlClient" ProviderManifestToken="2008" xmlns:store="http://schemas.microsoft.com/ado/2007/12/edm/EntityStoreSchemaGenerator" xmlns="http://schemas.microsoft.com/ado/2009/02/edm/ssdl">
+        <EntityContainer Name="SMsgSModelStoreContainer">
+          <EntitySet Name="smsg_Message" EntityType="SMsgSModel.Store.smsg_Message" store:Type="Tables" Schema="dbo" />
+          <EntitySet Name="smsg_Message_Archive" EntityType="SMsgSModel.Store.smsg_Message_Archive" store:Type="Tables" Schema="dbo" />
+          <EntitySet Name="smsg_MessageThread" EntityType="SMsgSModel.Store.smsg_MessageThread" store:Type="Tables" Schema="dbo" />
+          <AssociationSet Name="FK_smsg_MessageThread_smsg_Message" Association="SMsgSModel.Store.FK_smsg_MessageThread_smsg_Message">
+            <End Role="smsg_Message" EntitySet="smsg_Message" />
+            <End Role="smsg_MessageThread" EntitySet="smsg_MessageThread" />
+          </AssociationSet>
+          <AssociationSet Name="FK_smsg_MessageThread_smsg_Message_Archive" Association="SMsgSModel.Store.FK_smsg_MessageThread_smsg_Message_Archive">
+            <End Role="smsg_Message_Archive" EntitySet="smsg_Message_Archive" />
+            <End Role="smsg_MessageThread" EntitySet="smsg_MessageThread" />
+          </AssociationSet>
+          <AssociationSet Name="FK_smsg_MessageThread_smsg_Message_Archive1" Association="SMsgSModel.Store.FK_smsg_MessageThread_smsg_Message_Archive1">
+            <End Role="smsg_Message_Archive" EntitySet="smsg_Message_Archive" />
+            <End Role="smsg_MessageThread" EntitySet="smsg_MessageThread" />
+          </AssociationSet>
+          <AssociationSet Name="FK_smsg_MessageThread_smsg_Message1" Association="SMsgSModel.Store.FK_smsg_MessageThread_smsg_Message1">
+            <End Role="smsg_Message" EntitySet="smsg_Message" />
+            <End Role="smsg_MessageThread" EntitySet="smsg_MessageThread" />
+          </AssociationSet>
+        </EntityContainer>
+        <EntityType Name="smsg_Message">
+          <Key>
+            <PropertyRef Name="IDMessage" />
+          </Key>
+          <Property Name="IDMessage" Type="bigint" Nullable="false" StoreGeneratedPattern="Identity" />
+          <Property Name="Subject" Type="varchar" Nullable="false" MaxLength="150" />
+          <Property Name="Body" Type="varchar(max)" />
+          <Property Name="FromUser" Type="varchar" Nullable="false" MaxLength="150" />
+          <Property Name="ToUser" Type="varchar" Nullable="false" MaxLength="150" />
+          <Property Name="DateInserted" Type="date" Nullable="false" />
+          <Property Name="MessageRead" Type="bit" Nullable="false" />
+        </EntityType>
+        <EntityType Name="smsg_Message_Archive">
+          <Key>
+            <PropertyRef Name="IDMessageArchive" />
+          </Key>
+          <Property Name="IDMessageArchive" Type="bigint" Nullable="false" />
+          <Property Name="Subject" Type="varchar" Nullable="false" MaxLength="150" />
+          <Property Name="Body" Type="varchar(max)" />
+          <Property Name="FromUser" Type="varchar" Nullable="false" MaxLength="150" />
+          <Property Name="ToUser" Type="varchar" Nullable="false" MaxLength="150" />
+          <Property Name="DateInserted" Type="date" Nullable="false" />
+          <Property Name="MessageRead" Type="bit" Nullable="false" />
+        </EntityType>
+        <EntityType Name="smsg_MessageThread">
+          <Key>
+            <PropertyRef Name="IDMessageThread" />
+          </Key>
+          <Property Name="IDMessageThread" Type="bigint" Nullable="false" />
+          <Property Name="IDMessageInitial" Type="bigint" Nullable="false" />
+          <Property Name="IDMessageReply" Type="bigint" Nullable="false" />
+          <Property Name="DateInserted" Type="date" Nullable="false" />
+        </EntityType>
+        <Association Name="FK_smsg_MessageThread_smsg_Message">
+          <End Role="smsg_Message" Type="SMsgSModel.Store.smsg_Message" Multiplicity="1" />
+          <End Role="smsg_MessageThread" Type="SMsgSModel.Store.smsg_MessageThread" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="smsg_Message">
+              <PropertyRef Name="IDMessage" />
+            </Principal>
+            <Dependent Role="smsg_MessageThread">
+              <PropertyRef Name="IDMessageInitial" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_smsg_MessageThread_smsg_Message_Archive">
+          <End Role="smsg_Message_Archive" Type="SMsgSModel.Store.smsg_Message_Archive" Multiplicity="1" />
+          <End Role="smsg_MessageThread" Type="SMsgSModel.Store.smsg_MessageThread" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="smsg_Message_Archive">
+              <PropertyRef Name="IDMessageArchive" />
+            </Principal>
+            <Dependent Role="smsg_MessageThread">
+              <PropertyRef Name="IDMessageInitial" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_smsg_MessageThread_smsg_Message_Archive1">
+          <End Role="smsg_Message_Archive" Type="SMsgSModel.Store.smsg_Message_Archive" Multiplicity="1" />
+          <End Role="smsg_MessageThread" Type="SMsgSModel.Store.smsg_MessageThread" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="smsg_Message_Archive">
+              <PropertyRef Name="IDMessageArchive" />
+            </Principal>
+            <Dependent Role="smsg_MessageThread">
+              <PropertyRef Name="IDMessageReply" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_smsg_MessageThread_smsg_Message1">
+          <End Role="smsg_Message" Type="SMsgSModel.Store.smsg_Message" Multiplicity="1" />
+          <End Role="smsg_MessageThread" Type="SMsgSModel.Store.smsg_MessageThread" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="smsg_Message">
+              <PropertyRef Name="IDMessage" />
+            </Principal>
+            <Dependent Role="smsg_MessageThread">
+              <PropertyRef Name="IDMessageReply" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+      </Schema></edmx:StorageModels>
+    <!-- CSDL content -->
+    <edmx:ConceptualModels>
+      <Schema Namespace="SMsgSModel" Alias="Self" xmlns:annotation="http://schemas.microsoft.com/ado/2009/02/edm/annotation" xmlns="http://schemas.microsoft.com/ado/2008/09/edm">
+        <EntityContainer Name="MessagingDB" annotation:LazyLoadingEnabled="true">
+          <EntitySet Name="smsg_Message" EntityType="SMsgSModel.smsg_Message" />
+          <EntitySet Name="smsg_Message_Archive" EntityType="SMsgSModel.smsg_Message_Archive" />
+          <EntitySet Name="smsg_MessageThread" EntityType="SMsgSModel.smsg_MessageThread" />
+          <AssociationSet Name="FK_smsg_MessageThread_smsg_Message" Association="SMsgSModel.FK_smsg_MessageThread_smsg_Message">
+            <End Role="smsg_Message" EntitySet="smsg_Message" />
+            <End Role="smsg_MessageThread" EntitySet="smsg_MessageThread" />
+          </AssociationSet>
+          <AssociationSet Name="FK_smsg_MessageThread_smsg_Message1" Association="SMsgSModel.FK_smsg_MessageThread_smsg_Message1">
+            <End Role="smsg_Message" EntitySet="smsg_Message" />
+            <End Role="smsg_MessageThread" EntitySet="smsg_MessageThread" />
+          </AssociationSet>
+          <AssociationSet Name="FK_smsg_MessageThread_smsg_Message_Archive" Association="SMsgSModel.FK_smsg_MessageThread_smsg_Message_Archive">
+            <End Role="smsg_Message_Archive" EntitySet="smsg_Message_Archive" />
+            <End Role="smsg_MessageThread" EntitySet="smsg_MessageThread" />
+          </AssociationSet>
+          <AssociationSet Name="FK_smsg_MessageThread_smsg_Message_Archive1" Association="SMsgSModel.FK_smsg_MessageThread_smsg_Message_Archive1">
+            <End Role="smsg_Message_Archive" EntitySet="smsg_Message_Archive" />
+            <End Role="smsg_MessageThread" EntitySet="smsg_MessageThread" />
+          </AssociationSet>
+        </EntityContainer>
+        <EntityType Name="smsg_Message">
+          <Key>
+            <PropertyRef Name="IDMessage" />
+          </Key>
+          <Property Type="Int64" Name="IDMessage" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Type="String" Name="Subject" Nullable="false" MaxLength="150" FixedLength="false" Unicode="false" />
+          <Property Type="String" Name="Body" MaxLength="Max" FixedLength="false" Unicode="false" />
+          <Property Type="String" Name="FromUser" Nullable="false" MaxLength="150" FixedLength="false" Unicode="false" />
+          <Property Type="String" Name="ToUser" Nullable="false" MaxLength="150" FixedLength="false" Unicode="false" />
+          <Property Type="DateTime" Name="DateInserted" Nullable="false" />
+          <Property Type="Boolean" Name="MessageRead" Nullable="false" />
+          <NavigationProperty Name="smsg_MessageThread" Relationship="SMsgSModel.FK_smsg_MessageThread_smsg_Message" FromRole="smsg_Message" ToRole="smsg_MessageThread" />
+          <NavigationProperty Name="smsg_MessageThread1" Relationship="SMsgSModel.FK_smsg_MessageThread_smsg_Message1" FromRole="smsg_Message" ToRole="smsg_MessageThread" />
+        </EntityType>
+        <EntityType Name="smsg_Message_Archive">
+          <Key>
+            <PropertyRef Name="IDMessageArchive" />
+          </Key>
+          <Property Type="Int64" Name="IDMessageArchive" Nullable="false" />
+          <Property Type="String" Name="Subject" Nullable="false" MaxLength="150" FixedLength="false" Unicode="false" />
+          <Property Type="String" Name="Body" MaxLength="Max" FixedLength="false" Unicode="false" />
+          <Property Type="String" Name="FromUser" Nullable="false" MaxLength="150" FixedLength="false" Unicode="false" />
+          <Property Type="String" Name="ToUser" Nullable="false" MaxLength="150" FixedLength="false" Unicode="false" />
+          <Property Type="DateTime" Name="DateInserted" Nullable="false" />
+          <Property Type="Boolean" Name="MessageRead" Nullable="false" />
+          <NavigationProperty Name="smsg_MessageThread" Relationship="SMsgSModel.FK_smsg_MessageThread_smsg_Message_Archive" FromRole="smsg_Message_Archive" ToRole="smsg_MessageThread" />
+          <NavigationProperty Name="smsg_MessageThread1" Relationship="SMsgSModel.FK_smsg_MessageThread_smsg_Message_Archive1" FromRole="smsg_Message_Archive" ToRole="smsg_MessageThread" />
+        </EntityType>
+        <EntityType Name="smsg_MessageThread">
+          <Key>
+            <PropertyRef Name="IDMessageThread" />
+          </Key>
+          <Property Type="Int64" Name="IDMessageThread" Nullable="false" />
+          <Property Type="Int64" Name="IDMessageInitial" Nullable="false" />
+          <Property Type="Int64" Name="IDMessageReply" Nullable="false" />
+          <Property Type="DateTime" Name="DateInserted" Nullable="false" />
+          <NavigationProperty Name="smsg_Message" Relationship="SMsgSModel.FK_smsg_MessageThread_smsg_Message" FromRole="smsg_MessageThread" ToRole="smsg_Message" />
+          <NavigationProperty Name="smsg_Message1" Relationship="SMsgSModel.FK_smsg_MessageThread_smsg_Message1" FromRole="smsg_MessageThread" ToRole="smsg_Message" />
+          <NavigationProperty Name="smsg_Message_Archive" Relationship="SMsgSModel.FK_smsg_MessageThread_smsg_Message_Archive" FromRole="smsg_MessageThread" ToRole="smsg_Message_Archive" />
+          <NavigationProperty Name="smsg_Message_Archive1" Relationship="SMsgSModel.FK_smsg_MessageThread_smsg_Message_Archive1" FromRole="smsg_MessageThread" ToRole="smsg_Message_Archive" />
+        </EntityType>
+        <Association Name="FK_smsg_MessageThread_smsg_Message">
+          <End Type="SMsgSModel.smsg_Message" Role="smsg_Message" Multiplicity="1" />
+          <End Type="SMsgSModel.smsg_MessageThread" Role="smsg_MessageThread" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="smsg_Message">
+              <PropertyRef Name="IDMessage" />
+            </Principal>
+            <Dependent Role="smsg_MessageThread">
+              <PropertyRef Name="IDMessageInitial" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_smsg_MessageThread_smsg_Message1">
+          <End Type="SMsgSModel.smsg_Message" Role="smsg_Message" Multiplicity="1" />
+          <End Type="SMsgSModel.smsg_MessageThread" Role="smsg_MessageThread" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="smsg_Message">
+              <PropertyRef Name="IDMessage" />
+            </Principal>
+            <Dependent Role="smsg_MessageThread">
+              <PropertyRef Name="IDMessageReply" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_smsg_MessageThread_smsg_Message_Archive">
+          <End Type="SMsgSModel.smsg_Message_Archive" Role="smsg_Message_Archive" Multiplicity="1" />
+          <End Type="SMsgSModel.smsg_MessageThread" Role="smsg_MessageThread" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="smsg_Message_Archive">
+              <PropertyRef Name="IDMessageArchive" />
+            </Principal>
+            <Dependent Role="smsg_MessageThread">
+              <PropertyRef Name="IDMessageInitial" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_smsg_MessageThread_smsg_Message_Archive1">
+          <End Type="SMsgSModel.smsg_Message_Archive" Role="smsg_Message_Archive" Multiplicity="1" />
+          <End Type="SMsgSModel.smsg_MessageThread" Role="smsg_MessageThread" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="smsg_Message_Archive">
+              <PropertyRef Name="IDMessageArchive" />
+            </Principal>
+            <Dependent Role="smsg_MessageThread">
+              <PropertyRef Name="IDMessageReply" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+      </Schema>
+    </edmx:ConceptualModels>
+    <!-- C-S mapping content -->
+    <edmx:Mappings>
+      <Mapping Space="C-S" xmlns="http://schemas.microsoft.com/ado/2008/09/mapping/cs">
+        <EntityContainerMapping StorageEntityContainer="SMsgSModelStoreContainer" CdmEntityContainer="MessagingDB">
+          <EntitySetMapping Name="smsg_Message">
+            <EntityTypeMapping TypeName="SMsgSModel.smsg_Message">
+              <MappingFragment StoreEntitySet="smsg_Message">
+                <ScalarProperty Name="MessageRead" ColumnName="MessageRead" />
+                <ScalarProperty Name="DateInserted" ColumnName="DateInserted" />
+                <ScalarProperty Name="ToUser" ColumnName="ToUser" />
+                <ScalarProperty Name="FromUser" ColumnName="FromUser" />
+                <ScalarProperty Name="Body" ColumnName="Body" />
+                <ScalarProperty Name="Subject" ColumnName="Subject" />
+                <ScalarProperty Name="IDMessage" ColumnName="IDMessage" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="smsg_Message_Archive">
+            <EntityTypeMapping TypeName="SMsgSModel.smsg_Message_Archive">
+              <MappingFragment StoreEntitySet="smsg_Message_Archive">
+                <ScalarProperty Name="MessageRead" ColumnName="MessageRead" />
+                <ScalarProperty Name="DateInserted" ColumnName="DateInserted" />
+                <ScalarProperty Name="ToUser" ColumnName="ToUser" />
+                <ScalarProperty Name="FromUser" ColumnName="FromUser" />
+                <ScalarProperty Name="Body" ColumnName="Body" />
+                <ScalarProperty Name="Subject" ColumnName="Subject" />
+                <ScalarProperty Name="IDMessageArchive" ColumnName="IDMessageArchive" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="smsg_MessageThread">
+            <EntityTypeMapping TypeName="SMsgSModel.smsg_MessageThread">
+              <MappingFragment StoreEntitySet="smsg_MessageThread">
+                <ScalarProperty Name="DateInserted" ColumnName="DateInserted" />
+                <ScalarProperty Name="IDMessageReply" ColumnName="IDMessageReply" />
+                <ScalarProperty Name="IDMessageInitial" ColumnName="IDMessageInitial" />
+                <ScalarProperty Name="IDMessageThread" ColumnName="IDMessageThread" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+        </EntityContainerMapping>
+      </Mapping>
+    </edmx:Mappings>
+  </edmx:Runtime>
+  <!-- EF Designer content (DO NOT EDIT MANUALLY BELOW HERE) -->
+  <Designer xmlns="http://schemas.microsoft.com/ado/2008/10/edmx">
+    <Connection>
+      <DesignerInfoPropertySet>
+        <DesignerProperty Name="MetadataArtifactProcessing" Value="EmbedInOutputAssembly" />
+      </DesignerInfoPropertySet>
+    </Connection>
+    <Options>
+      <DesignerInfoPropertySet>
+        <DesignerProperty Name="ValidateOnBuild" Value="true" />
+        <DesignerProperty Name="EnablePluralization" Value="True" />
+        <DesignerProperty Name="IncludeForeignKeysInModel" Value="True" />
+        <DesignerProperty Name="CodeGenerationStrategy" Value="None" />
+      </DesignerInfoPropertySet>
+    </Options>
+    <!-- Diagram content (shape and connector positions) -->
+    <Diagrams>
+      <Diagram Name="smsg" ZoomLevel="114">
+        <EntityTypeShape EntityType="SMsgSModel.smsg_Message" Width="1.5" PointX="0.75" PointY="1" Height="2.7494921874999996" />
+        <EntityTypeShape EntityType="SMsgSModel.smsg_Message_Archive" Width="1.5" PointX="0.75" PointY="5" Height="2.7494921874999996" />
+        <EntityTypeShape EntityType="SMsgSModel.smsg_MessageThread" Width="1.5" PointX="3" PointY="1" Height="2.5571907552083335" />
+        <AssociationConnector Association="SMsgSModel.FK_smsg_MessageThread_smsg_Message" >
+          <ConnectorPoint PointX="2.25" PointY="2.2785953776041667" />
+          <ConnectorPoint PointX="3" PointY="2.2785953776041667" />
+        </AssociationConnector>
+        <AssociationConnector Association="SMsgSModel.FK_smsg_MessageThread_smsg_Message1" >
+          <ConnectorPoint PointX="2.25" PointY="1.5767976888020834" />
+          <ConnectorPoint PointX="3" PointY="1.5767976888020834" />
+        </AssociationConnector>
+        <AssociationConnector Association="SMsgSModel.FK_smsg_MessageThread_smsg_Message_Archive" >
+          <ConnectorPoint PointX="2.25" PointY="6.37474609375" />
+          <ConnectorPoint PointX="3.75" PointY="6.37474609375" />
+          <ConnectorPoint PointX="3.75" PointY="3.5571907552083335" />
+        </AssociationConnector>
+        <AssociationConnector Association="SMsgSModel.FK_smsg_MessageThread_smsg_Message_Archive1" >
+          <ConnectorPoint PointX="2.25" PointY="5.6561205468749991" />
+          <ConnectorPoint PointX="3.3437475" PointY="5.6561205468749991" />
+          <ConnectorPoint PointX="3.3437475" PointY="3.5571907552083335" />
+        </AssociationConnector>
+      </Diagram>
+    </Diagrams>
+  </Designer>
+</edmx:Edmx>

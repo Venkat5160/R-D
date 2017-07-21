@@ -72,5 +72,14 @@ namespace TinyMCE.Controllers
             con.Close();
             return View(model);
         }
+
+        public ActionResult Paste()
+        {
+            return View();
+        }
+        public ActionResult ExcelPaste()
+        {
+            return View();
+        }
     }
 }

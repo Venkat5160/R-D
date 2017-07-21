@@ -1,0 +1,15 @@
+﻿@model smsg_DAL.IUserMessage<smsg_DAL.IUser<string>, string>
+
+@{
+    ViewBag.Title = "Display Message id" + @Model.Subject;
+}
+
+
+
+<fieldset>
+    <legend>@Model.Subject</legend>
+    <div>
+    @Html.Raw(Model.Body)
+    </div>
+</fieldset>
+

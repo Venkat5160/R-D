@@ -1,0 +1,160 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>8.0.30703</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{0FD4D734-F674-45B1-92F1-2ECA76D07AF5}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>smsg_DAL</RootNamespace>
+    <AssemblyName>smsg_DALUser</AssemblyName>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <SccProjectName>SAK</SccProjectName>
+    <SccLocalPath>SAK</SccLocalPath>
+    <SccAuxPath>SAK</SccAuxPath>
+    <SccProvider>SAK</SccProvider>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="EntityFramework, Version=4.1.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL" />
+    <Reference Include="System" />
+    <Reference Include="System.ComponentModel.DataAnnotations" />
+    <Reference Include="System.configuration" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Data.Entity" />
+    <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.Security" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Find.cs">
+      <DependentUpon>Find.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="ITList.cs">
+      <DependentUpon>ITList.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Model1.Context.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Model1.Context.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Model1.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Model1.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SimpleFind.cs" />
+    <Compile Include="SimpleUser.cs" />
+    <Compile Include="smsg_User_auto.cs">
+      <DependentUpon>Model1.tt</DependentUpon>
+    </Compile>
+    <Compile Include="smsg_User_findDatabase.cs">
+      <DependentUpon>Find.tt</DependentUpon>
+    </Compile>
+    <Compile Include="smsg_User_List.cs" />
+    <Compile Include="smsg_User_List_auto.cs">
+      <DependentUpon>ITList.tt</DependentUpon>
+    </Compile>
+    <Compile Include="smsg_User_visitor_auto.cs">
+      <DependentUpon>Visitor.tt</DependentUpon>
+    </Compile>
+    <Compile Include="user.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>user.edmx</DependentUpon>
+    </Compile>
+    <Compile Include="Visitor.cs">
+      <DependentUpon>Visitor.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="App.Config" />
+    <None Include="Find.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>Find.cs</LastGenOutput>
+    </None>
+    <None Include="ITList.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>ITList.cs</LastGenOutput>
+    </None>
+    <None Include="Model1.Context.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>Model1.Context.cs</LastGenOutput>
+    </None>
+    <None Include="Model1.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>Model1.cs</LastGenOutput>
+    </None>
+    <EntityDeploy Include="user.edmx">
+      <Generator>EntityModelCodeGenerator</Generator>
+      <LastGenOutput>user.Designer.cs</LastGenOutput>
+    </EntityDeploy>
+    <None Include="Visitor.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>Visitor.cs</LastGenOutput>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Common\common.csproj">
+      <Project>{C9092721-9D90-4C53-9006-BFD81A2B52AC}</Project>
+      <Name>common</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\ExceptionUtils\ExceptionUtils.csproj">
+      <Project>{BE2E054E-E1A6-4706-986F-AF9015EC1B00}</Project>
+      <Name>ExceptionUtils</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\FastDatabaseQuery\FastDatabaseQuery.csproj">
+      <Project>{E1C12C23-B7AC-4455-998F-C0178217E22C}</Project>
+      <Name>FastDatabaseQuery</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\smsg_DAL\smsg_DAL.csproj">
+      <Project>{57FA1523-04A6-427A-A84E-9B17F12C50CD}</Project>
+      <Name>smsg_DAL</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\smsg_Interfaces\smsg_Interfaces.csproj">
+      <Project>{DA21CE36-07D5-423D-9C7B-F3B41AE71A3F}</Project>
+      <Name>smsg_Interfaces</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

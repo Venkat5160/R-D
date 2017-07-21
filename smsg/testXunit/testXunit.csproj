@@ -1,0 +1,118 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>8.0.30703</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{922AF2A2-50AE-4CB9-B2B6-B330D65783A6}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>testXunit</RootNamespace>
+    <AssemblyName>testXunit</AssemblyName>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <SccProjectName>SAK</SccProjectName>
+    <SccLocalPath>SAK</SccLocalPath>
+    <SccAuxPath>SAK</SccAuxPath>
+    <SccProvider>SAK</SccProvider>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="AssertExtensions">
+      <HintPath>..\..\..\download\xunit18\Samples\AssertExtensions\bin\Release\AssertExtensions.dll</HintPath>
+    </Reference>
+    <Reference Include="Ploeh.AutoFixture">
+      <HintPath>..\packages\AutoFixture.2.4.1\lib\Ploeh.AutoFixture.dll</HintPath>
+    </Reference>
+    <Reference Include="Ploeh.SemanticComparison">
+      <HintPath>..\packages\AutoFixture.2.4.1\lib\Ploeh.SemanticComparison.dll</HintPath>
+    </Reference>
+    <Reference Include="SpecificationExample">
+      <HintPath>..\..\..\download\xunit18\Samples\SpecificationExamples\bin\Release\SpecificationExample.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Configuration" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Web.Extensions" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+    <Reference Include="xunit, Version=1.8.0.1549, Culture=neutral, PublicKeyToken=8d05b1bb7a6fdb6c, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\download\xunit18\Samples\AssertExtensions\bin\Release\xunit.dll</HintPath>
+    </Reference>
+    <Reference Include="xunit.extensions">
+      <HintPath>..\..\..\download\xunit18\Samples\xunit\xunit.extensions.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="DatabaseTests.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="App.Config" />
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Common\common.csproj">
+      <Project>{C9092721-9D90-4C53-9006-BFD81A2B52AC}</Project>
+      <Name>common</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\ExceptionUtils\ExceptionUtils.csproj">
+      <Project>{BE2E054E-E1A6-4706-986F-AF9015EC1B00}</Project>
+      <Name>ExceptionUtils</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\FastDatabaseQuery\FastDatabaseQuery.csproj">
+      <Project>{E1C12C23-B7AC-4455-998F-C0178217E22C}</Project>
+      <Name>FastDatabaseQuery</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\smsg_DALUser\smsg_DALUser.csproj">
+      <Project>{0FD4D734-F674-45B1-92F1-2ECA76D07AF5}</Project>
+      <Name>smsg_DALUser</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\smsg_DAL\smsg_DAL.csproj">
+      <Project>{57FA1523-04A6-427A-A84E-9B17F12C50CD}</Project>
+      <Name>smsg_DAL</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\smsg_Interfaces\smsg_Interfaces.csproj">
+      <Project>{DA21CE36-07D5-423D-9C7B-F3B41AE71A3F}</Project>
+      <Name>smsg_Interfaces</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\smsg_UsersImplementation\smsg_UsersImplementation.csproj">
+      <Project>{AB14BFE4-F970-455A-A953-829DB0762DBD}</Project>
+      <Name>smsg_UsersImplementation</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>time /T
+rem D:\download\xunit18\Samples\xunit\xunit.console.clr4.x86.exe "$(TargetPath)" /html "$(TargetDir)a.html" 
+time /T</PostBuildEvent>
+  </PropertyGroup>
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

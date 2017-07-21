@@ -1,0 +1,62 @@
+﻿@model smsg_MVC4.Areas.Messaging.Models.MVCUserModel
+
+@{
+    ViewBag.Title = "Index of messages";
+    int iMessage = 1;
+    var read = @Model.User.RetrieveMessageReceived_Paginatings(null,Model.MessageReceived_PageNumber, 10, null);
+}
+
+<h2>Messages ( read and unread)</h2>
+<fieldset>
+<legend>
+Number of Unread Messages : @Model.User.RetrieveMessagesUnreadCount()</legend>
+
+<table border="1">
+<thead>
+<tr>
+<th>Nr.</th>
+<th>Subject</th></thead>
+
+
+@foreach (var item in Model.User.RetrieveMessagesUnreadSummary())
+{ 
+    
+    
+<tr>    <td>@iMessage</td><td> 
+<a href="@Url.Action("DisplayMessage", new { id = item.Key })" data-rel="dialog">@item.Value</a>
+
+</tr>
+    
+}
+
+</table>    
+
+
+</fieldset>
+
+<fieldset>
+<legend>
+Number of Read Messages : @read.Count() </legend>
+
+<table border="1">
+<thead>
+<tr>
+<th>Nr.</th>
+<th>Subject</th></thead>
+
+
+@foreach (var item in read)
+{ 
+    
+    
+<tr>    <td>@iMessage</td><td> 
+<a href="@Url.Action("DisplayMessage", new { id = item.Key })" data-rel="dialog">@item.Value</a>
+
+</tr>
+    
+}
+
+</table>    
+
+
+</fieldset>

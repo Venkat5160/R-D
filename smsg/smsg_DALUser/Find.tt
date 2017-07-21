@@ -1,0 +1,578 @@
+﻿<#
+//*********************************************************
+//
+//    Copyright (c) Microsoft. All rights reserved.
+//    This code is licensed under the Microsoft Public License.
+//    THIS CODE IS PROVIDED *AS IS* WITHOUT WARRANTY OF
+//    ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING ANY
+//    IMPLIED WARRANTIES OF FITNESS FOR A PARTICULAR
+//    PURPOSE, MERCHANTABILITY, OR NON-INFRINGEMENT.
+//
+//*********************************************************
+#> 
+<#@ template language="C#" debug="false" hostspecific="true"#>
+<#@ include file="EF.Utility.CS.ttinclude"#><#@
+ output extension=".cs"#><#
+
+CodeGenerationTools code = new CodeGenerationTools(this);
+MetadataLoader loader = new MetadataLoader(this);
+CodeRegion region = new CodeRegion(this, 1);
+MetadataTools ef = new MetadataTools(this);
+
+string inputFile = @"user.edmx";
+EdmItemCollection ItemCollection = loader.CreateEdmItemCollection(inputFile);
+string namespaceName = code.VsNamespaceSuggestion();
+
+EntityFrameworkTemplateFileManager fileManager = EntityFrameworkTemplateFileManager.Create(this);
+
+// Write out support code to primary template output file
+//Andrei
+WriteHeader(fileManager, "smsg_DAL","FastDatabaseQuery","System.Data.Entity");
+BeginNamespace(namespaceName, code);
+WriteCustomObservableCollection();
+EndNamespace(namespaceName);
+
+// Emit Entity Types
+
+
+foreach (EntityType entity in ItemCollection.GetItems<EntityType>().OrderBy(e => e.Name))
+{
+    fileManager.StartNewFile(entity.Name + "_findDatabase.cs");
+    BeginNamespace(namespaceName, code);
+    bool entityHasNullableFKs = entity.NavigationProperties.Any(np => np.GetDependentProperties().Any(p=>ef.IsNullable(p)));
+    string nameclass=code.Escape(entity);
+
+    string FromID_Template="var value{0}=FindPartial.{0};\r\npredicate=EFRebinder.Utility.AndRebind(predicate,/*item=>item.{0} == value{0}*/fexp_{0}(value{0}));" + Environment.NewLine;
+    string FromID ="";
+    string PartialFind_Template="FindPartial.{0} = {0};\r\n";
+    string PartialFind="";
+    int NumberPK=0;
+    string NamePropTypeID="";
+    string NamePropID="";
+    
+    string Exp_FromColumnName = "";
+	string IOrderedQueryableFind = "public static IOrderedQueryable<" + nameclass + "> OrderByField(IQueryable<" +  nameclass + "> var, string Field1) { "  ; 
+	IOrderedQueryableFind +=@"
+	if(string.IsNullOrEmpty(Field1))
+		return null;//TODO : return by PK
+
+	IOrderedQueryable<" + nameclass + @"> ret=null;
+
+	switch(Field1)
+	{
+			
+	";
+	string IOrderedQueryableFindTemplate="case \"{0}\": ret=var.OrderBy(exp_{0});break;\r\n";
+    string ExpTemplate =@"
+    public static Expression<Func<{0}, {2}>> exp_{1} = (item => item.{1} );
+    public static Func<{2}, Expression<Func<{0}, bool>>> fexp_{1} = value => (item => 
+            {3} item.{1} != null  &&  
+            item.{1} == value);
+    //TODO: find who supports this!   
+	//{5}    a{3} a
+    {5}public static Func<{2},{2}, Expression<Func<{0}, bool>>> fexp_{1}Between = (value1,value2) => (item => item.{1}> value1 && item.{1}<value2);
+	{5}public static Func<{2},{2}, Expression<Func<{0}, bool>>> fexp_{1}BetweenEq = (value1,value2) => (item => item.{1} >= value1 && item.{1} <= value2);
+	{5}public static Func<{2},{2}, Expression<Func<{0}, bool>>> fexp_{1}BetweenEqDate = (value1,value2) =>{{
+	{5}		value1=
+	{5}			{3}value1.Value.Date ;
+	{5}			{6}value1.Date ;
+	{5}		value2=
+	{5}			{3}value2.Value.Date.AddDays(1) ;
+	{5}			{6}value2.Date.AddDays(1) ;	
+	{5}		return (item => item.{1} >= value1 && item.{1} < value2);
+	{5} }};
+	{5}public static Func<{2}, Expression<Func<{0}, bool>>> fexp_{1}Greater = (value =>(item => item.{1} > value));
+	{5}public static Func<{2}, Expression<Func<{0}, bool>>> fexp_{1}GreaterEq = (value => (item =>item.{1} >= value));
+	{5}public static Func<{2}, Expression<Func<{0}, bool>>> fexp_{1}Less = (value => (item =>item.{1} < value));
+	{5}public static Func<{2}, Expression<Func<{0}, bool>>> fexp_{1}LessEq = (value => (item =>item.{1} <= value));
+    //public static Func<{2}, Expression<Func<{0}, bool>>> fexp_{1}Greater = value => (item => HelperExpressions.GreaterThan<{2}>()(item.{1} ,value));
+    //public static Func<{2}, Expression<Func<{0}, bool>>> fexp_{1}Less = value => (item => HelperExpressions.GreaterThan<{2}>()(value, item.{1} ));
+    {4} public static Func<{2}, Expression<Func<{0}, bool>>> fexp_{1}Contains = value => (item =>  item.{1} != null  &&  item.{1}.Contains(value));
+    {4} public static Func<{2}, Expression<Func<{0}, bool>>> fexp_{1}StartsWith = value => (item =>  item.{1} != null  &&  item.{1}.StartsWith(value));
+	{4} public IQueryable<{0}> LoadFrom_{1}ContainsQ(string value)
+	{4} {{
+	{4}  return this.ObjectSetWithInclude().Where(fexp_{1}Contains(value));
+	{4}  }}
+	{4} public static Func<{2},string, Expression<Func<{0}, bool>>> fexp_{1}ContainsMultiple = (value,separator) => 
+	{4}	{{
+	{4}		value=value.ToLower();
+	{4}		var arr=value.Split(new string[1]{{separator}}, StringSplitOptions.RemoveEmptyEntries);
+	{4}		switch(arr.Length)//TODO: use a better expression here rahter than based on length 
+	{4}		{{
+	{4}			case 1:
+	{4}				return (item =>  item.{1} != null  &&  item.{1}.ToLower().Contains(value));
+	{4}			case 2:
+	{4}				 {{
+	{4}				  string v1=arr[0].Replace(separator," + "\"" + "\"" +@");
+	{4}				  string v2=arr[1].Replace(separator," + "\"" + "\""  +@");				
+	{4}				 return (item =>  item.{1} != null  &&  item.{1}.ToLower().Contains(v1)  &&  item.{1}.ToLower().Contains(v2) );		
+	{4}				}}
+	{4}			default:
+	{4}				 {{
+	{4}				   string v1=arr[0].Replace(separator," + "\"" + "\"" +@");
+	{4}				  string v2=arr[1].Replace(separator," + "\"" + "\""  +@");
+	{4}				  string v3=arr[2].Replace(separator," + "\"" + "\""  +@");
+	{4}				return (item =>  item.{1} != null  &&  item.{1}.ToLower().Contains(v1) &&  item.{1}.ToLower().Contains(v2) &&  item.{1}.ToLower().Contains(v3) );
+	{4}				}}
+	{4}
+	{4}		}}
+	{4}			
+	{4}
+	{4}	}};	 
+	{4} public static Func<string, Expression<Func<{0}, bool>>> fexp_{1}ContainsMultipleDef = value => fexp_{1}ContainsMultiple(value, " + "\"%\"" + @");
+    ";
+    string ExpAll ="";
+    int NumberStrings = 0;
+    
+    string NamePropType="";
+    string NamePropTypeArray="";
+	string NamePropTypeArrayPropFind="";
+
+    string NamePropTypeArrayCall="";
+    string NamePropFind="";
+    string List_ToString = "string ret =";
+    List_ToString += "\"" + nameclass + ",Count = " + "\"" + " + this.Count;" + Environment.NewLine;
+    List_ToString += "for( int i=0;i<this.Count;i++){" +Environment.NewLine;
+    List_ToString += "ret += Environment.NewLine + \"Item : \" + i  ;"+Environment.NewLine;
+    string format = "\"" ;
+
+    string LoadFromName ="";
+    string LoadFromNameTemplate =@"
+    public IQueryable<{0}> LoadFrom_{2}Q({1} Value)
+            {{
+                
+                return LoadFrom1PropertyQ(exp_{2}, Value);
+
+            }}
+    public void LoadFrom_{2}({1} Value)
+            {{
+                
+                this.LoadFromQueryable( LoadFrom_{2}Q(Value));
+
+            }}
+    public IQueryable<{0}> LoadFindIDsColumn_{2}Q({1}[] ColumnValues)
+    {{
+        return LoadFindIDsColumnQ<{1}>(ColumnValues," +"\"{2}\"" +@"); 
+    }}
+    public void LoadFindIDsColumn_{2}({1}[] ColumnValues)
+    {{
+        this.LoadFromQueryable(LoadFindIDsColumnQ<{1}>(ColumnValues," +"\"{2}\"" +@")); 
+    }}
+
+
+	public IQueryable<{0}> LoadFindIDsColumn_{2}Q(List<{1}> ColumnValues)
+    {{
+        return LoadFindIDsColumn_{2}Q(ColumnValues.ToArray<{1}>()); 
+    }}
+    public void LoadFindIDsColumn_{2}(List<{1}> ColumnValues)
+    {{
+        this.LoadFindIDsColumn_{2}(ColumnValues.ToArray<{1}>()); 
+    }}
+            ";
+    foreach (EdmProperty edmProperty in entity.Properties.Where(p => p.TypeUsage.EdmType is PrimitiveType && p.DeclaringType == entity))
+    {
+        string NameProp=code.Escape(edmProperty);
+        bool IsString =false;
+		bool IsDateTime=(edmProperty.TypeUsage.EdmType.ToString() == "Edm.DateTime") ;
+        if(edmProperty.TypeUsage.EdmType.ToString()=="Edm.String")
+        {
+            NumberStrings++;
+            IsString=true;
+            
+        }
+        bool isnull=edmProperty.Nullable;
+        string commentnull="";
+        if(!isnull)
+            commentnull="//";
+
+		string commentNotnull="";
+        if(isnull)
+            commentNotnull="//";
+        ExpAll +=string.Format(ExpTemplate,nameclass,NameProp,code.Escape(edmProperty.TypeUsage),commentnull, IsString?"":"//", IsDateTime?"":"//" , commentNotnull);
+
+        LoadFromName +=string.Format(LoadFromNameTemplate, nameclass,code.Escape(edmProperty.TypeUsage),NameProp);
+
+        IOrderedQueryableFind +=string.Format(IOrderedQueryableFindTemplate,NameProp );
+		if(!IsPrimaryKey(edmProperty))
+            continue;		
+        NumberPK++;
+        
+        FromID += string.Format(FromID_Template,NameProp);
+        NamePropTypeID +=code.Escape(edmProperty.TypeUsage) + " " + NameProp +",";
+        NamePropID +=  " " + NameProp +",";
+        PartialFind +=string.Format(PartialFind_Template,NameProp);
+        
+
+
+        format +=","+  code.Escape(edmProperty.TypeUsage) + " " + code.Escape(edmProperty)  + " = {" + code.Escape(edmProperty) + "} " ;
+        NamePropTypeArray +=code.Escape(edmProperty.TypeUsage) + "[] " + code.Escape(edmProperty) +",";
+        NamePropTypeArrayCall +=code.Escape(edmProperty) +",";
+		NamePropTypeArrayPropFind +="exp_" +code.Escape(edmProperty) +"," +code.Escape(edmProperty) ;
+        NamePropType +=code.Escape(edmProperty.TypeUsage) + " " + code.Escape(edmProperty) +",";
+        NamePropFind +=string.Format("f.FindPartial.{0} = {0};{1}" , code.Escape(edmProperty) ,Environment.NewLine);				
+
+
+		
+        
+    }
+	IOrderedQueryableFind    +=@"
+	}
+	return ret;
+	}";
+    if(NumberPK > 0)
+    {
+        NamePropTypeID =NamePropTypeID.Substring(0,NamePropTypeID.Length -1);
+        NamePropID=NamePropID.Substring(0,NamePropID.Length -1);
+    }
+
+
+            format += "\"";
+            List_ToString += "ret +=UserUtils.ToStringProps.FormatWith( " + format + ",this[i]);"+Environment.NewLine;
+            List_ToString += "};";
+            List_ToString += "return ret;";
+            if(NamePropTypeArray.Length> 0)
+            {
+                NamePropTypeArray=NamePropTypeArray.Substring(0, NamePropTypeArray.Length-1);
+            }
+            if(NamePropTypeArrayCall.Length> 0)
+            {
+                NamePropTypeArrayCall=NamePropTypeArrayCall.Substring(0, NamePropTypeArrayCall.Length-1);
+            }
+
+            
+#>
+
+<#=Accessibility.ForType(entity)#> <#=code.SpaceAfter(code.AbstractOption(entity))#>partial class <#=code.Escape(entity)#>_FindDB : FindInDatabase<<#=code.Escape(entity)#>>
+{
+    <#=ExpAll#>
+   
+    
+    public <#=nameclass#>_FindDB(ColList<<#=code.Escape(entity)#>> col):base(col)
+    {
+ 
+        
+<#
+        
+#>    
+                
+    }
+    
+
+    
+    <#=LoadFromName#>
+    private IQueryable<<#=nameclass#>> LoadFrom1PropertyQ<T>(Expression<Func<<#=nameclass#>, T>> property, T Value)
+            {
+                var iq = HelperExpressions.PredicateBinary<T, <#=nameclass#> >(property, Value, "equal");
+                return ObjectSetWithInclude().Where(iq);
+
+            }
+    
+    public void LoadFrom1Property<T>(Expression<Func<<#=nameclass#>, T>> property, T Value)
+            {
+                
+                this.LoadFromQueryable(LoadFrom1PropertyQ(property,Value));
+
+            }
+            public void LoadFrom2Property<T,U>(Expression<Func<<#=nameclass#>, T>> property1, T Value1, Expression<Func<<#=nameclass#>, U>> property2, U Value2,bool And)
+            {
+                var iq = HelperExpressions.PredicateBinary<T, <#=nameclass#> >(property1, Value1, "equal");
+                if(And)
+                {
+                    iq =EFRebinder.Utility.AndRebind(iq, HelperExpressions.PredicateBinary<U, <#=nameclass#> >(property2, Value2, "equal"));
+                }
+                else
+                {
+                    iq =EFRebinder.Utility.OrRebind(iq, HelperExpressions.PredicateBinary<U, <#=nameclass#> >(property2, Value2, "equal"));
+                }
+                this.LoadFromQueryable(ObjectSetWithInclude().Where(iq));
+
+            }
+    public void LoadFindIDsColumn<T>(T[] ColumnValues,string ColumnName)
+    {
+        this.LoadFromQueryable(LoadFindIDsColumnQ(ColumnValues,ColumnName));
+    }
+    public IQueryable<<#=nameclass#>> LoadFindIDsColumnQ<T>(T[] ColumnValues,string ColumnName)
+    {
+	//TODO: do this with buildcontains
+        bool IsString = (typeof(T).FullName == typeof(string).FullName);
+
+        string where="";
+        string whereTemplate="it.{0} in ({1})";            
+        if (ColumnValues != null && ColumnValues.Length > 0)
+            {
+                    
+                string inID = "{" + string.Join(", ", ColumnValues) + "}";
+                if (IsString)
+                {
+                    inID ="";
+                    foreach (var item in ColumnValues)
+                    {
+                        inID += string.Format("'{0}',", item.ToString().Replace("'","''"));
+                    }
+                    inID = inID.Substring(0, inID.Length - 1);
+					inID = "{" + inID + "}";
+                }
+                where += string.Format(whereTemplate, ColumnName, inID);
+            }
+            if (where.Length == 0)
+                return null;
+            //return ObjectSetWithInclude().Where(where);
+			return null;
+    }
+    public IQueryable<<#=nameclass#>> LoadFindIDsQ(<#=NamePropTypeArray#>)
+  {
+    
+        var find = BuildContainsExpression(<#=NamePropTypeArrayPropFind#>);			
+        return ObjectSetWithInclude().Where(find);
+  }
+    public IQueryable<<#=nameclass#>> LoadFromPKQ(<#=NamePropTypeID#>)
+    {
+        //<#= PartialFind #>
+        //return ObjectSetWithInclude().Where(PredicateID());
+		return null;		
+    }
+    public <#=nameclass#> LoadFromPK(<#=NamePropTypeID#>)
+    {
+
+        this.LoadFromQueryable(LoadFromPKQ(<#=NamePropID#>));
+            
+        if(this.ColToLoad.Count == 1)
+        {
+            return this.ColToLoad[0];
+        }
+        throw new ExceptionUtils.NoElementFoundException(<#=NamePropID#>);
+        //return null;
+    }
+    
+<#
+//NOT SO PROUD ABOUT THIS CODE
+region.Begin("include ");
+    string flaginclude ="public enum Include : ulong { None = 0";
+    int i=0;
+    string templatefindflags="if ((flaginclude & Include.Include_{0}) == Include.Include_{0}) {1} ret = ret.Include(\"{2}\");{1}";
+    string findflags = "";
+    List<string> endMembers=new List<string>();
+    endMembers.Add(entity.Name);
+    foreach (NavigationProperty navProperty in entity.NavigationProperties.Where(np => np.DeclaringType == entity))
+    {
+        string EndMember = navProperty.ToEndMember.Name;
+        if(endMembers.Contains(EndMember) )
+                    continue;
+        string currentflag ="111" + code.Escape(EndMember) ;
+        if(endMembers.Contains(currentflag) )
+                continue;
+        
+        endMembers.Add(currentflag);//prevent auto-relationship
+        flaginclude += "/*1*/,Include_" + code.Escape(EndMember) + "=" +Math.Pow(2,i++) ;
+        findflags +=string.Format(templatefindflags,code.Escape(EndMember), Environment.NewLine, code.Escape(navProperty));
+
+        
+    }
+    foreach (NavigationProperty navProperty in entity.NavigationProperties.Where(np => np.DeclaringType == entity))
+    {
+        string EndMember=navProperty.ToEndMember.Name;
+        if(endMembers.Contains(EndMember) )
+                    continue;
+        
+        var entInv=ItemCollection.GetItems<EntityType>().Where(e=>e.Name == EndMember).FirstOrDefault();		
+        foreach(NavigationProperty navPropertyInv in entInv.NavigationProperties.Where(np => np.DeclaringType == entInv))
+        {
+            string nameinv=navPropertyInv.ToEndMember.Name;
+            if(endMembers.Contains(nameinv) )
+                    continue;
+            string currentflag =code.Escape(EndMember) +"_"+ code.Escape(nameinv);
+            if(endMembers.Contains(currentflag) )
+                    continue;
+            endMembers.Add(currentflag);//prevent auto-relationship
+            flaginclude += "/*2*/,Include_" + currentflag + "=" +Math.Pow(2,i++) ;
+            findflags +=string.Format(templatefindflags,code.Escape(EndMember) +"_"+ code.Escape(nameinv) , Environment.NewLine,code.Escape(EndMember) +"."+ code.Escape(nameinv) );
+        }
+    }
+
+        foreach (NavigationProperty navProperty in entity.NavigationProperties.Where(np => np.DeclaringType == entity))
+    {
+        
+        string EndMember=navProperty.ToEndMember.Name;
+        if(endMembers.Contains(EndMember) )
+                    continue;
+        var entInv=ItemCollection.GetItems<EntityType>().Where(e=>e.Name == EndMember).FirstOrDefault();		
+        foreach(NavigationProperty navPropertyInv in entInv.NavigationProperties.Where(np => np.DeclaringType == entInv))
+        {
+            string nameinv=navPropertyInv.ToEndMember.Name;
+            if(endMembers.Contains(nameinv) )
+                    continue;
+
+            var entInv1=ItemCollection.GetItems<EntityType>().Where(e=>e.Name == nameinv).FirstOrDefault();		
+            foreach(NavigationProperty navPropertyInv1 in entInv1.NavigationProperties.Where(np => np.DeclaringType == entInv1))
+            {
+                string endmember1 = navPropertyInv1.ToEndMember.Name;
+                if(endMembers.Contains(endmember1) )
+                    continue;
+                if(EndMember == endmember1)
+                    continue;
+
+                string currentflag =code.Escape(EndMember) +"_"+ code.Escape(nameinv) +"_"+ code.Escape(endmember1);
+            if(endMembers.Contains(currentflag) )
+                    continue;
+            endMembers.Add(currentflag);//prevent auto-relationship
+                flaginclude += "/*3*/,Include_" +    currentflag       + "=" +Math.Pow(2,i++) ;
+                findflags +=string.Format(templatefindflags,currentflag , Environment.NewLine,code.Escape(EndMember) +"."+ code.Escape(nameinv)+"."+ code.Escape(endmember1) );
+            }
+        }
+    }
+
+    if(i> 0){
+    flaginclude += ",All = "+ (Math.Pow(2,i)-1);
+    }
+     flaginclude += "}";
+    #>
+        
+     <#=flaginclude#>
+     public Include flaginclude =Include.None;
+<#
+    region.End();//finish code for include
+#>
+
+private IQueryable<<#=nameclass#>> ObjectSetWithInclude()
+    {
+        IQueryable<<#=nameclass#>> ret=this.ColToLoad.SelfObjectSet;
+        <#=findflags#>
+        return ret;
+    }
+    public  void LoadFindCustomPredicate()
+    {
+            this.LoadFromQueryable(LoadFindCustomPredicateQ());		  
+    }
+	public IOrderedQueryable<<#=nameclass#>> LoadFindCustomPredicateOrderedQ(string FieldName){
+		return OrderByField(LoadFindCustomPredicateQ(),FieldName);
+	}
+    public  IQueryable<<#=nameclass#>> LoadFindCustomPredicateQ()
+  {
+	var ret=ObjectSetWithInclude();
+	if( custompredicate != null)
+	{
+		ret=ret.Where (custompredicate);;
+	}
+	return ret;
+    //      return ObjectSetWithInclude().Where (custompredicate);
+
+   }
+	<#= IOrderedQueryableFind     #>
+}
+
+
+
+<#
+    EndNamespace(namespaceName);
+}
+
+
+fileManager.Process();
+
+#>
+<#+
+void WriteHeader(EntityFrameworkTemplateFileManager fileManager, params string[] extraUsings)
+{
+    fileManager.StartHeader();
+#>
+//------------------------------------------------------------------------------
+// <auto-generated>
+//     This code was generated from a template.
+//
+//     Changes to this file may cause incorrect behavior and will be lost if
+//     the code is regenerated.
+// </auto-generated>
+//------------------------------------------------------------------------------
+
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Collections.Specialized;
+using System.Linq.Expressions;
+using System.Data.Objects;
+using System.Linq;
+using System.Reflection;
+<#=String.Join(String.Empty, extraUsings.Select(u => "using " + u + ";" + Environment.NewLine).ToArray())#>
+<#+
+    fileManager.EndBlock();
+}
+
+void BeginNamespace(string namespaceName, CodeGenerationTools code)
+{
+    CodeRegion region = new CodeRegion(this);
+    if (!String.IsNullOrEmpty(namespaceName))
+    {
+#>
+namespace <#=code.EscapeNamespace(namespaceName)#>
+{
+<#+
+        PushIndent(CodeRegion.GetIndent(1));
+    }
+}
+
+
+void EndNamespace(string namespaceName)
+{
+    if (!String.IsNullOrEmpty(namespaceName))
+    {
+        PopIndent();
+#>
+}
+<#+
+    }
+}
+
+bool IsReadWriteAccessibleProperty(EdmMember member)
+{
+    string setter = Accessibility.ForWriteOnlyProperty(member);
+    string getter = Accessibility.ForReadOnlyProperty(member);
+
+    return getter != "private" && getter != "protected" && setter != "private" && setter != "protected";
+}
+bool  IsPrimaryKey(EdmProperty edmProperty)
+{
+    if(edmProperty.DeclaringType.BuiltInTypeKind == BuiltInTypeKind.EntityType)
+    {
+        return ((EntityType)edmProperty.DeclaringType).KeyMembers.Contains(edmProperty.Name);
+    }
+    return false;
+}
+string PropertyVirtualModifier(string accessibility)
+{
+    return accessibility + (accessibility != "private" ? " virtual" : "");
+}
+
+void WriteCustomObservableCollection()
+{
+#>
+//TODO :find a utility for this default class
+
+<#+
+}
+
+bool VerifyTypesAreCaseInsensitiveUnique(EdmItemCollection itemCollection)
+{
+    Dictionary<string, bool> alreadySeen = new Dictionary<string, bool>(StringComparer.OrdinalIgnoreCase);
+    foreach(StructuralType type in itemCollection.GetItems<StructuralType>())
+    {
+        if (!(type is EntityType || type is ComplexType))
+        {
+            continue;
+        }
+
+        if (alreadySeen.ContainsKey(type.FullName))
+        {
+            Error(String.Format(CultureInfo.CurrentCulture, "This template does not support types that differ only by case, the types {0} are not supported", type.FullName));
+            return false;
+        }
+        else
+        {
+            alreadySeen.Add(type.FullName, true);
+        }
+
+    }
+
+    return true;
+}
+#>

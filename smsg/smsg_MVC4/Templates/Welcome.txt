@@ -1,0 +1,10 @@
+﻿Welcome @Model.UserTo.UserName to @Model.SiteName !<br />
+--other  features of the site here <br />
+You can now send messages to your friends via our WebInterface <br />
+Please see  at @Model.HttpWhere <br />
+
+Best regards,<br />
+@Model.SiteName 
+
+
+

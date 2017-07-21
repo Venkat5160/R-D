@@ -1,0 +1,112 @@
+﻿@model TinyMCE.Models.TinyDemoModel
+
+@{
+    ViewBag.Title = "ExcelPaste";
+}
+
+<h2>ExcelPaste</h2>
+
+@using (Html.BeginForm())
+{
+    @Html.AntiForgeryToken()
+
+    <div class="form-horizontal">
+        <h4>TinyDemoModel</h4>
+        <hr />
+        @Html.ValidationSummary(true)
+        <div class="form-group">
+            @Html.LabelFor(model => model.Template, htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @Html.TextAreaFor(model => model.Template)
+                @Html.ValidationMessageFor(model => model.Template)
+            </div>
+        </div>
+
+        <div class="form-group">
+            <div class="col-md-offset-2 col-md-10">
+                <input type="submit" value="Create" class="btn btn-default" />
+            </div>
+        </div>
+    </div>
+}
+
+<div>
+    @Html.ActionLink("Back to List", "Index")
+</div>
+
+@section scripts{
+
+
+    @Scripts.Render("~/bundles/jqueryval")
+    <script src="~/Scripts/tinymce/tinymce.js"></script>
+    <script type="text/javascript">
+
+        {
+            //id:'content',
+            //name:'contentToBindWith',
+            //xtype:'textarea',
+            //autoScroll:true,
+            //listeners:  {
+            //    afterrender : function(){
+            tinymce.init({
+                selector: "textarea",
+                id: "tinymce_jquery_editor",
+                name: "tinymce_jquery_editor",
+                autoWidth: true,
+                height: 300,
+                /*give desired font size*/
+                fontsize_formats: "8pt 9pt 10pt 11pt 12pt 14pt 16pt 18pt 20pt 26pt 36pt",
+                /*To Customize Menubar*/
+                //menubar: "file edit view insert format tools table",
+                /*To Enable/Disable Menubar give true/false*/
+                menubar: true,
+                /* configure the menu items*/
+                menu: {
+                    file: { title: 'File', items: 'newdocument' },
+                    edit: { title: 'Edit', items: 'undo redo | cut copy paste pastetext | selectall' },
+                    insert: { title: 'Insert', items: 'link media | template hr' },
+                    view: { title: 'View', items: 'visualaid' },
+                    format: { title: 'Format', items: 'bold italic underline strikethrough superscript subscript | formats | removeformat' },
+                    table: { title: 'Table', items: 'inserttable tableprops deletetable | cell row column' },
+                    tools: { title: 'Tools', items: 'spellchecker code' }
+                },
+                plugins: [
+                    "advlist autolink lists link image charmap print preview hr anchor pagebreak",
+                    "searchreplace wordcount visualblocks visualchars code fullscreen",
+                    "insertdatetime media nonbreaking save table contextmenu directionality",
+                    "emoticons template textcolor paste"
+                ],
+                toolbar1: "insertfile undo redo pastetext | styleselect | fontselect | fontsizeselect | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link image",
+
+                toolbar2: "print preview media | forecolor backcolor emoticons | code | table",
+                theme: "modern",
+                content_css: "../css/tinymce_editor_custom.css",
+                statusbar: false,
+                verify_html: true,
+                theme_advanced_resizing: false,
+                verify_html: true,
+                forced_root_block: 'div',
+                force_br_newlines: true,
+                force_p_newlines: false,
+                remove_linebreaks: false,
+                remove_trailing_nbsp: false,
+                paste_auto_cleanup_on_paste: false,
+                browser_spellcheck : true,
+                /*Excel copy-paste Utility :Starts*/
+                paste_retain_style_properties: "all",
+                paste_strip_class_attributes: "none",
+                paste_remove_spans : true,
+                /*Excel copy-paste Utility :Ends*/
+                extended_valid_elements: "a[name|href|target|title|onclick],img[class|src|border=0|alt|title|hspace|vspace|width|height|align|onmouseover|onmouseout|name],table[style|class|border=2|width|cellspacing|cellpadding|bgcolor],colgroup,col[style|width],tbody,tr[style|class],td[style|class|colspan|rowspan|width|height],hr[class|width|size|noshade],font[face|size|color|style],span[class|align|style]",
+                setup: function (ed) {
+                    /*Here give the id of above textarea component to load default text inside*/
+                    $('#content').val('Test Content');
+                }
+            });
+        }
+        // }
+        //}
+
+    </script>
+
+}

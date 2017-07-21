@@ -1,0 +1,58 @@
+﻿@model LinkedIn_RD.Services.Person
+
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>Callback</title>
+</head>
+<body>
+    <div>
+        <h4>Person</h4>
+        <hr />
+        <dl class="">
+            <dt>
+                @Html.DisplayNameFor(model => model.FirstName)
+            </dt>
+    
+            <dd>
+                @Html.DisplayFor(model => model.FirstName)
+            </dd>
+    
+            <dt>
+                @Html.DisplayNameFor(model => model.LastName)
+            </dt>
+    
+            <dd>
+                @Html.DisplayFor(model => model.LastName)
+            </dd>
+    
+            <dt>
+                @Html.DisplayNameFor(model => model.headLine)
+            </dt>
+    
+            <dd>
+                @Html.DisplayFor(model => model.headLine)
+            </dd>
+    
+            <dt>
+                @Html.DisplayNameFor(model => model.ProfileUrl)
+            </dt>
+    
+            <dd>
+                @Html.DisplayFor(model => model.ProfileUrl)
+            </dd>
+    
+        </dl>
+    </div>
+    <p>
+        @Html.ActionLink("Edit", "Edit", new { id = Model.id }) |
+        @Html.ActionLink("Back to List", "Index")
+    </p>
+</body>
+</html>

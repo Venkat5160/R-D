@@ -1,0 +1,24 @@
+﻿@model smsg_MVC4.Models.LogOnModel
+
+@{
+    ViewBag.Title = "Your Account";
+    int i=smsg_MVC4.Utils.SiteUtils.RetrieveMessagesUnreadCount(smsg_MVC4.Utils.SiteUtils.UserLoggedOn.Key);
+}
+
+@section Header {
+    @Html.ActionLink("Back", "Index", "Home", null, new { data_icon = "arrow-l", data_rel = "back" })
+    <h1>@ViewBag.Title</h1>
+}
+
+<p>
+    Logged on as <strong>@User.Identity.Name</strong>.
+</p>
+
+<ul data-role="listview" data-inset="true">
+    
+    <li> @Html.ActionLink("Unread Messages: " + i, MVC.Messaging.Message.Index())</li>
+    <li>@Html.ActionLink("Change password", "ChangePassword")</li>
+
+    <li>@Html.ActionLink("Log off", "LogOff")</li>
+
+</ul>

@@ -1,0 +1,47 @@
+﻿@model TinyMCE.Models.TinyDemoModel
+@{
+    ViewBag.Title = "Index";
+}
+
+@{
+    ViewBag.Title = "Paste";
+}
+
+<h2>Paste</h2>
+
+@using (Html.BeginForm("Index", "TinyMCE_Demo", FormMethod.Post))
+{
+    @Html.AntiForgeryToken()
+    <div>
+        @Html.TextAreaFor(m => m.Template)
+    </div><br />
+    <div>
+        <input type="submit" id="btn" value="Save" />
+    </div>
+
+}
+
+@section Scripts
+{
+    @Scripts.Render("~/bundles/jqueryval")
+    <script src="~/Scripts/tinymce/tinymce.js"></script>
+    <script type="text/javascript">
+
+        tinymce.init({
+            selector: 'textarea',
+            // height: 500,
+            menubar: false,
+            plugins: [
+  'advlist autolink lists link image charmap print preview anchor',
+  'searchreplace visualblocks code fullscreen',
+  'insertdatetime media table contextmenu paste code'
+            ],
+            extended_valid_elements: "a[name|href|target|title|onclick],img[class|src|border=0|alt|title|hspace|vspace|width|height|align|onmouseover|onmouseout|name],table[style|class|border=1|width|cellspacing=0|cellpadding=0|bgcolor],colgroup,col[style|width],tbody,tr[style|class],td[style|class|colspan|rowspan|width|height],hr[class|width|size|noshade],font[face|size|color|style],span[class|align|style]",
+            //setup: function (ed) {
+            //    /*here give the id of above textarea component to load default text inside*/
+            //    $('#content').val('test content');
+            //}
+        });
+
+    </script>
+}

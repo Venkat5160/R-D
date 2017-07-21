@@ -1,0 +1,409 @@
+﻿<#
+//*********************************************************
+//
+//    Copyright (c) Microsoft. All rights reserved.
+//    This code is licensed under the Microsoft Public License.
+//    THIS CODE IS PROVIDED *AS IS* WITHOUT WARRANTY OF
+//    ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING ANY
+//    IMPLIED WARRANTIES OF FITNESS FOR A PARTICULAR
+//    PURPOSE, MERCHANTABILITY, OR NON-INFRINGEMENT.
+//
+//*********************************************************
+#>
+<#@ template language="C#" debug="false" hostspecific="true"#>
+<#@ include file="EF.Utility.CS.ttinclude"#><#@
+ output extension=".cs"#><#
+
+CodeGenerationTools code = new CodeGenerationTools(this);
+MetadataLoader loader = new MetadataLoader(this);
+CodeRegion region = new CodeRegion(this, 1);
+MetadataTools ef = new MetadataTools(this);
+
+string inputFile =  @"user.edmx";
+EdmItemCollection ItemCollection = loader.CreateEdmItemCollection(inputFile);
+string namespaceName = code.VsNamespaceSuggestion();
+
+EntityFrameworkTemplateFileManager fileManager = EntityFrameworkTemplateFileManager.Create(this);
+EntityContainer container = ItemCollection.GetItems<EntityContainer>().FirstOrDefault();
+// Write out support code to primary template output file
+//Andrei
+WriteHeader(fileManager,"FastDatabaseQuery","smsg_DAL");
+BeginNamespace(namespaceName, code);
+WriteCustomObservableCollection(container);
+EndNamespace(namespaceName);
+
+// Emit Entity Types
+foreach (EntityType entity in ItemCollection.GetItems<EntityType>().OrderBy(e => e.Name))
+{
+    fileManager.StartNewFile(entity.Name + "_List_auto.cs");
+    BeginNamespace(namespaceName, code);
+    bool entityHasNullableFKs = entity.NavigationProperties.Any(np => np.GetDependentProperties().Any(p=>ef.IsNullable(p)));
+    string nameclass= code.Escape(entity);
+    List<EdmProperty> PropPK=new List<EdmProperty>();
+
+    foreach (EdmProperty edmProperty in entity.Properties.Where(p => p.TypeUsage.EdmType is PrimitiveType && p.DeclaringType == entity))
+    {
+        if(IsPrimaryKey(edmProperty))
+            PropPK.Add(edmProperty);
+    }
+    string PKComma="";
+    foreach (EdmProperty edmProperty in PropPK)
+    {	
+        PKComma +=",\"" + code.Escape(edmProperty) + "\"";
+    }
+
+#>
+[System.Diagnostics.DebuggerDisplayAttribute("<#=nameclass#>_List Count={Count}")]
+<#=Accessibility.ForType(entity)#> <#=code.SpaceAfter(code.AbstractOption(entity))#>partial class <#=nameclass#>_List : ColList<<#=code.Escape(entity)#>>
+{
+
+#region FieldNames
+public class fieldNames
+{
+    <#
+    foreach (EdmProperty edmProperty in entity.Properties.Where(p => p.TypeUsage.EdmType is PrimitiveType && p.DeclaringType == entity))
+    {
+    #>
+    public readonly string <#=code.Escape(edmProperty)#> = "<#=code.Escape(edmProperty)#>"; 
+    <#
+    }
+    #>
+}
+#endregion
+private static readonly fieldNames s_fields =new fieldNames();
+public static fieldNames FieldNames
+{
+    get
+    {
+        return s_fields;
+    }
+}
+    #region Find
+    public void InitFind()
+    {
+        base.LoadFromDB = new <#=code.Escape(entity)#>_FindDB(this);			
+        //base.FindInCollection = new <#=code.Escape(entity)#>_Find(this);
+    }
+    public new <#=code.Escape(entity)#>_FindDB LoadFromDB
+    {
+        get
+        {
+            return base.LoadFromDB as <#=code.Escape(entity)#>_FindDB;
+        }
+        set
+        {
+            base.LoadFromDB = value;
+        }
+
+    }
+    /*
+    public new <#=code.Escape(entity)#>_Find FindInCollection
+    {
+        get
+        {
+            return base.FindInCollection as <#=code.Escape(entity)#>_Find;
+        }
+        set
+        {
+            base.FindInCollection = value;
+        }
+
+    }
+    */
+    
+    
+    #endregion
+    #region Constructors
+    partial void OnInit();
+    public <#=code.Escape(entity)#>_List()
+        : base()
+        {
+            OnInit();
+            InitFind();
+            base.BeforeSave+=new EventHandler<EventArgs>(<#=code.Escape(entity)#>_List_BeforeSave);
+        }
+
+         
+         void <#=code.Escape(entity)#>_List_BeforeSave(object sender, EventArgs e)
+             {
+                 var Visitor=new <#=code.Escape(entity)#>_Visitor();
+                 base.Conection.ChangeTracker.DetectChanges();
+                 foreach(var item in base.Conection.ChangeTracker.Entries().Where(p => p.State == System.Data.EntityState.Added || p.State == System.Data.EntityState.Deleted || p.State == System.Data.EntityState.Modified))
+                 {
+                     var obj = item.CurrentValues.ToObject();
+                     var rv = obj as <#=code.Escape(entity)#>;
+                     if (rv != null)
+                     {
+                          Console.WriteLine(rv.Accept(Visitor));
+                     }
+                     
+
+                 }
+                
+             }
+
+
+    public <#=code.Escape(entity)#>_List(IObjectConnection con)
+        : base(con)
+        {
+            OnInit();
+            InitFind();
+            base.BeforeSave+=new EventHandler<EventArgs>(<#=code.Escape(entity)#>_List_BeforeSave);
+        }
+        private <#=code.Escape(entity)#>_List(ObjectContext con)
+        : base(con)
+        {
+            OnInit();
+            InitFind();
+            base.BeforeSave+=new EventHandler<EventArgs>(<#=code.Escape(entity)#>_List_BeforeSave);
+        }
+    public <#=code.Escape(entity)#>_List(string con)
+        : base()
+        {
+            OnInit();
+            base.Conection =new <#=code.Escape(container)#>(con);
+            InitFind();
+            base.BeforeSave+=new EventHandler<EventArgs>(<#=code.Escape(entity)#>_List_BeforeSave);
+        }
+    #endregion
+    partial void OnBeginFastDeleteAll();
+    public void FastDeleteAll()
+    {
+        OnBeginFastDeleteAll();
+        //TODO: prefix
+        ExecuteCommand(@"delete from <#=entity.Name#>");
+    }
+
+    public void ExecuteCommand(string Command){
+      base.Conection.Database.ExecuteSqlCommand(Command);
+    }
+    <#
+    string WherePK="";
+    string ItemPK="";
+    int nr=1;
+    
+    foreach (EdmProperty edmProperty in PropPK)
+    {	
+        WherePK +="(" + edmProperty + "= {" + (nr++) + "}) and ";
+        ItemPK="item."+code.Escape(edmProperty) + ",";
+    }
+    WherePK =WherePK.Substring(0,WherePK.Length-"and ".Length);
+    ItemPK =ItemPK.Substring(0,ItemPK.Length - ",".Length);
+
+    foreach (EdmProperty edmProperty in entity.Properties.Where(p => p.TypeUsage.EdmType is PrimitiveType && p.DeclaringType == entity))
+    {
+        string NameProp=code.Escape(edmProperty);
+        
+    #>
+    public void Update_<#= NameProp #>(<#=code.Escape(edmProperty.TypeUsage)#> value)
+    {
+        
+        foreach(var item in this)
+        {
+            //TODO: prefix
+            base.Conection.Database.ExecuteSqlCommand("update <#=entity.Name#> set <#=edmProperty#> = {0} where <#=WherePK#>",value, <#=ItemPK#>);
+        }
+    }
+    <#
+    }
+    #>
+    public void ExecuteCommandForAll<T>(string Command,Func<<#=entity.Name#>, T> value)
+    {
+        foreach(var item in this)
+        {
+            T val=value(item);
+            base.Conection.Database.ExecuteSqlCommand(Command,val);
+        }
+    }
+    public void ExecuteCommandForAll_FormatPK(string Command){
+        foreach(var item in this)
+        {
+            string cmd=string.Format(Command <#=PKComma#>);
+            base.Conection.Database.ExecuteSqlCommand(cmd);
+        }
+    }
+
+<#
+
+#>
+}
+<#
+    EndNamespace(namespaceName);
+}
+
+foreach (ComplexType complex in ItemCollection.GetItems<ComplexType>().OrderBy(e => e.Name))
+{
+    fileManager.StartNewFile(complex.Name + ".cs");
+    BeginNamespace(namespaceName, code);
+#>
+<#=Accessibility.ForType(complex)#> partial class <#=code.Escape(complex)#>
+{
+<#
+    region.Begin("Primitive Properties");
+
+    foreach(EdmProperty edmProperty in complex.Properties.Where(p => p.TypeUsage.EdmType is PrimitiveType && p.DeclaringType == complex))
+    {
+        bool isDefaultValueDefinedInModel = (edmProperty.DefaultValue != null);
+#>
+
+    <#=Accessibility.ForProperty(edmProperty)#> <#=code.Escape(edmProperty.TypeUsage)#> <#=code.Escape(edmProperty)#>
+<#
+        if (isDefaultValueDefinedInModel)
+        {
+#>
+    {
+        <#=code.SpaceAfter(Accessibility.ForGetter(edmProperty))#>get { return <#=code.FieldName(edmProperty)#>; }
+        <#=code.SpaceAfter(Accessibility.ForSetter(edmProperty))#>set { <#=code.FieldName(edmProperty)#> = value; }
+    }
+    private <#=code.Escape(edmProperty.TypeUsage)#> <#=code.FieldName(edmProperty)#><#=code.StringBefore(" = ", code.CreateLiteral(edmProperty.DefaultValue))#>;
+<#
+        }
+        else
+        {
+#>
+    {
+        <#=code.SpaceAfter(Accessibility.ForGetter(edmProperty))#>get;
+        <#=code.SpaceAfter(Accessibility.ForSetter(edmProperty))#>set;
+    }
+<#
+        }
+    }
+
+    region.End();
+
+    region.Begin("Complex Properties");
+
+    foreach(EdmProperty edmProperty in complex.Properties.Where(p => p.TypeUsage.EdmType is ComplexType && p.DeclaringType == complex))
+    {
+#>
+
+    <#=Accessibility.ForProperty(edmProperty)#> <#=code.Escape(edmProperty.TypeUsage)#> <#=code.Escape(edmProperty)#>
+    {
+        <#=code.SpaceAfter(Accessibility.ForGetter(edmProperty))#>get { return <#=code.FieldName(edmProperty)#>; }
+        <#=code.SpaceAfter(Accessibility.ForSetter(edmProperty))#>set { <#=code.FieldName(edmProperty)#> = value; }
+    }
+    private <#=code.Escape(edmProperty.TypeUsage)#> <#=code.FieldName(edmProperty)#> = new <#=code.Escape(edmProperty.TypeUsage)#>();
+<#
+    }
+
+    region.End();
+#>
+}
+<#
+    EndNamespace(namespaceName);
+}
+
+if (!VerifyTypesAreCaseInsensitiveUnique(ItemCollection))
+{
+    return "";
+}
+
+fileManager.Process();
+
+#>
+<#+
+void WriteHeader(EntityFrameworkTemplateFileManager fileManager, params string[] extraUsings)
+{
+    fileManager.StartHeader();
+#>
+//------------------------------------------------------------------------------
+// <auto-generated>
+//     This code was generated from a template.
+//
+//     Changes to this file may cause incorrect behavior and will be lost if
+//     the code is regenerated.
+// </auto-generated>
+//------------------------------------------------------------------------------
+
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Collections.Specialized;
+using System.Linq.Expressions;
+using System.Linq;
+using System.Data.Objects;
+
+<#=String.Join(String.Empty, extraUsings.Select(u => "using " + u + ";" + Environment.NewLine).ToArray())#>
+<#+
+    fileManager.EndBlock();
+}
+
+void BeginNamespace(string namespaceName, CodeGenerationTools code)
+{
+    CodeRegion region = new CodeRegion(this);
+    if (!String.IsNullOrEmpty(namespaceName))
+    {
+#>
+namespace <#=code.EscapeNamespace(namespaceName)#>
+{
+<#+
+        PushIndent(CodeRegion.GetIndent(1));
+    }
+}
+
+
+void EndNamespace(string namespaceName)
+{
+    if (!String.IsNullOrEmpty(namespaceName))
+    {
+        PopIndent();
+#>
+}
+<#+
+    }
+}
+
+bool IsReadWriteAccessibleProperty(EdmMember member)
+{
+    string setter = Accessibility.ForWriteOnlyProperty(member);
+    string getter = Accessibility.ForReadOnlyProperty(member);
+
+    return getter != "private" && getter != "protected" && setter != "private" && setter != "protected";
+}
+
+string PropertyVirtualModifier(string accessibility)
+{
+    return accessibility + (accessibility != "private" ? " virtual" : "");
+}
+
+void WriteCustomObservableCollection(EntityContainer container)
+{
+#>
+//TODO : figure what to do with this class
+<#+
+}
+
+bool VerifyTypesAreCaseInsensitiveUnique(EdmItemCollection itemCollection)
+{
+    Dictionary<string, bool> alreadySeen = new Dictionary<string, bool>(StringComparer.OrdinalIgnoreCase);
+    foreach(StructuralType type in itemCollection.GetItems<StructuralType>())
+    {
+        if (!(type is EntityType || type is ComplexType))
+        {
+            continue;
+        }
+
+        if (alreadySeen.ContainsKey(type.FullName))
+        {
+            Error(String.Format(CultureInfo.CurrentCulture, "This template does not support types that differ only by case, the types {0} are not supported", type.FullName));
+            return false;
+        }
+        else
+        {
+            alreadySeen.Add(type.FullName, true);
+        }
+
+    }
+
+    return true;
+}
+bool  IsPrimaryKey(EdmProperty edmProperty)
+{
+    if(edmProperty.DeclaringType.BuiltInTypeKind == BuiltInTypeKind.EntityType)
+    {
+        return ((EntityType)edmProperty.DeclaringType).KeyMembers.Contains(edmProperty.Name);
+    }
+    return false;
+}
+#>

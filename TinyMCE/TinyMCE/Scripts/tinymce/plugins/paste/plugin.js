@@ -331,7 +331,7 @@ define(
       var shortEndedElements = schema.getShortEndedElements();
       var ignoreElements = Tools.makeMap('script noscript style textarea video audio iframe object', ' ');
       var blockElements = schema.getBlockElements();
-
+         
       function walk(node) {
         var name = node.name, currentNode = node;
 
@@ -408,6 +408,8 @@ define(
         /<br>$/i // Trailing BR elements
       ]);
 
+     
+      debugger;
       return html;
     }
 
@@ -836,6 +838,7 @@ define(
         html = args.content;
 
         if (!args.isDefaultPrevented()) {
+            debugger;
           // User has bound PastePostProcess events then we need to pass it through a DOM node
           // This is not ideal but we don't want to let the browser mess up the HTML for example
           // some browsers add &nbsp; to P tags etc
@@ -1311,6 +1314,7 @@ define(
         };
 
         editor.on('paste', function (e) {
+            debugger;
           // Getting content from the Clipboard can take some time
           var clipboardTimer = new Date().getTime();
           var clipboardContent = getClipboardContent(e);
@@ -1586,12 +1590,14 @@ define(
       var settings = editor.settings;
 
       editor.on('BeforePastePreProcess', function (e) {
+          debugger
         var content = e.content, retainStyleProperties, validStyles;
 
         // Remove google docs internal guid markers
         content = content.replace(/<b[^>]+id="?docs-internal-[^>]*>/gi, '');
         content = content.replace(/<br class="?Apple-interchange-newline"?>/gi, '');
 
+          // retainStyleProperties = "[all]";//settings.paste_retain_style_properties;
         retainStyleProperties = settings.paste_retain_style_properties;
         if (retainStyleProperties) {
           validStyles = Tools.makeMap(retainStyleProperties.split(/[, ]/));

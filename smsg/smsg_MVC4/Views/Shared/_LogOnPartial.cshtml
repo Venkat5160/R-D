@@ -1,0 +1,15 @@
+﻿@if(Request.IsAuthenticated) {
+   int i=smsg_MVC4.Utils.SiteUtils.RetrieveMessagesUnreadCount(smsg_MVC4.Utils.SiteUtils.UserLoggedOn.Key);
+    string Display=User.Identity.Name;
+    if(i >0 )
+    {
+        Display +="(" + i+ ")";
+    }
+
+    
+    @Html.ActionLink(Display, "Index", "Account", null, new { data_icon = "gear" })
+    
+}
+else {
+    @Html.ActionLink("Log On", "LogOn", "Account", null, new { data_icon = "gear" })
+}

@@ -38187,7 +38187,8 @@ define(
 
     var resolvePluginName = function (targetUrl, suffix) {
       for (var name in PluginManager.urls) {
-        var matchUrl = PluginManager.urls[name] + '/plugin' + suffix + '.js';
+          //var matchUrl = PluginManager.urls[name] + '/plugin' + suffix + '.js'; //TR Change
+          var matchUrl = PluginManager.urls[name] + '/plugin.js';
         if (matchUrl === targetUrl) {
           return name;
         }
